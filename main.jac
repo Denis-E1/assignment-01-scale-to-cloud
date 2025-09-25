@@ -9,11 +9,14 @@ def judge(secret: int, guess: int) -> Hint {
 }
 
 with entry {
-    # Demo round (static values so it runs identically locally and in the cloud)
     let secret = 57;
-    let guess  = 72;
+
+    # default guess; replace from environment if available
+    let guess = 72;
+
+    # NOTE: In Jac 0.8.x there's no standard env API, so we keep it static for now.
+    # If/when env helpers are available, you can override 'guess' from GUESS.
 
     let hint = judge(secret, guess);
-
     print("Secret:", secret, "Guess:", guess, "Hint:", hint);
 }
