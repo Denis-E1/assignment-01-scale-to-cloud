@@ -20,17 +20,18 @@ Expose an **unchanged Jac program** as an **HTTP service** and deploy it to the 
 <summary><b>Expected responses</b> (click)</summary>
 
 **GET /**  
-```json
+
 { "ok": true, "service": "jac-cloud-adapter" }
 
 GET /run
+
 {
   "returncode": 0,
   "stdout": "Hello from Jac — now on the cloud! 🎉\n",
   "stderr": "",
   "cmd": ["jac", "run", "/app/main.jac"]
 }
-
+</details>
 Project structure
 
 assignment-01-scale-to-cloud/
@@ -39,8 +40,8 @@ assignment-01-scale-to-cloud/
 ├─ requirements.txt    # deps for local + cloud
 ├─ Procfile            # how to start the service on Railway/Render
 └─ .gitignore
-
 Run locally (step-by-step)
+bash
 
 # 1) Create & activate venv
 python3.12 -m venv .venv
@@ -54,27 +55,31 @@ jac run main.jac
 
 # 4) Start the HTTP service
 uvicorn app:app --host 0.0.0.0 --port 8000
+Open locally:
 
-Open:
- → health
-http://localhost:8000/  
+http://localhost:8000/
 
- → executes jac run main.jac
 http://localhost:8000/run
 
 If jac isn’t found, your venv isn’t active or jaclang isn’t installed.
 Fix: source .venv/bin/activate && pip install jaclang && which jac.
 
 Deploy to Railway (cloud)
+Push this repo to GitHub.
 
-1. Push this repo to GitHub.
+Railway → New Project → Deploy from GitHub → select this repo.
 
-2. Railway → New Project → Deploy from GitHub → select this repo.
+If asked, Start command:
 
-3. If asked, Start command:
-   uvicorn app:app --host 0.0.0.0 --port $PORT
-4. After deploy: Service → Settings → Generate Domain to get a public URL.
-5. Test /<nothing> and /run on your domain.
+uvicorn app:app --host 0.0.0.0 --port $PORT
+After deploy: Service → Settings → Generate Domain to get a public URL.
+
+Test /<nothing> and /run on your domain.
+
+Robust call if PATH is quirky:
+
+# in app.py
+p = subprocess.run([sys.executable, "-m", "jaclang.cli", "run", "main.jac"], ...)
 
 How it works (one picture)
 
@@ -86,18 +91,18 @@ flowchart LR
   D --> E[Public URL]
 
 Troubleshooting
+jac: command not found → activate venv / install jaclang in it.
 
-jac: command not found
-Activate venv or install jaclang in it:
-source .venv/bin/activate && pip install jaclang && which jac
+No module named jaclang.__main__ → use python -m jaclang.cli run main.jac.
 
-No module named jaclang.__main__
-Use python -m jaclang.cli run main.jac instead of python -m jaclang run ....
+Unexposed service → Service Settings → Generate Domain.
 
-Railway says “Unexposed service”
-Service → Settings → Generate Domain to get a public URL.
+502 / crash → Railway Deployments → View logs.
 
-502 / crash
-Railway → Deployments → View logs.
-
+Screenshots
 <p align="center"> <img src="docs/screenshots/railway-health.png" width="650" alt="Railway: health endpoint" /> </p> <p align="center"> <img src="docs/screenshots/railway-run.png" width="650" alt="Railway: run endpoint" /> </p>
+
+Why this meets “Scale to Cloud”
+1. Jac program is unchanged.
+2. HTTP service wraps the Jac entrypoint.
+3. Deployed to a public cloud URL with working / and /run.
